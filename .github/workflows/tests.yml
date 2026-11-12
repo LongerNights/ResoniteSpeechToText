@@ -1,0 +1,19 @@
+name: tests
+
+# Runs the unit tests for the speech pipeline in core/. The mod itself (src/) is not built here because it references
+# Resonite's own DLLs, which are not in this repository and cannot be redistributed. Tests that need the real speech models
+# skip themselves when the models are absent.
+on:
+  push:
+  pull_request:
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Test
+        run: dotnet test tests/Core.Tests --configuration Release

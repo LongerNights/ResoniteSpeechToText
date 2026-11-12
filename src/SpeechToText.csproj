@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Optional, git-ignored: sets ResonitePath for this machine (see Local.props.example). -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Local.props" Condition="Exists('$(MSBuildThisFileDirectory)..\Local.props')" />
+  <PropertyGroup>
+    <AssemblyName>SpeechToText</AssemblyName>
+    <RootNamespace>SpeechToText</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>1.0.0</Version>
+    <!-- Where Resonite is installed. Order: -p:ResonitePath=..., Local.props, the RESONITE_PATH environment variable, the default Steam path. -->
+    <ResonitePath Condition="'$(ResonitePath)'=='' and '$(RESONITE_PATH)'!=''">$(RESONITE_PATH)</ResonitePath>
+    <ResonitePath Condition="'$(ResonitePath)'==''">C:\Program Files (x86)\Steam\steamapps\common\Resonite</ResonitePath>
+    <!-- Never installs by default. Deploy with: dotnet build -p:InstallMod=true (game must be closed) -->
+    <InstallMod Condition="'$(InstallMod)'==''">false</InstallMod>
+    <!-- Copy NuGet dependencies (Whisper.net + native runtimes) next to the build output so they can be installed into rml_libs\SpeechToText -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FrooxEngine"><HintPath>$(ResonitePath)\FrooxEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Elements.Core"><HintPath>$(ResonitePath)\Elements.Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Elements.Assets"><HintPath>$(ResonitePath)\Elements.Assets.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ResoniteModLoader"><HintPath>$(ResonitePath)\Libraries\ResoniteModLoader.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Whisper.net and its natives arrive transitively through the core library. -->
+    <ProjectReference Include="..\core\SpeechToText.Core.csproj" />
+  </ItemGroup>
+  <Target Name="InstallMod" AfterTargets="Build" Condition="'$(InstallMod)'=='true'">
+    <ItemGroup>
+      <!-- Windows x64 only: the runtimes package also carries linux/macos/arm/x86 natives the game never loads. -->
+      <ModLibs Include="$(OutDir)**\*" Exclude="$(OutDir)$(AssemblyName).dll;$(OutDir)$(AssemblyName).pdb;$(OutDir)$(AssemblyName).deps.json;$(OutDir)SpeechToText.Core.dll;$(OutDir)SpeechToText.Core.pdb;$(OutDir)SpeechToText.Core.deps.json;$(OutDir)runtimes\linux-*\**;$(OutDir)runtimes\macos-*\**;$(OutDir)runtimes\win-arm64\**;$(OutDir)runtimes\win-x86\**;$(OutDir)ggml-metal.metal" />
+    </ItemGroup>
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).dll" DestinationFolder="$(ResonitePath)\rml_mods" />
+    <!-- The core library goes straight into rml_libs: the mod's static config initialisers need its enums before our Resolver exists. -->
+    <Copy SourceFiles="$(OutDir)SpeechToText.Core.dll" DestinationFolder="$(ResonitePath)\rml_libs" />
+    <Copy SourceFiles="@(ModLibs)" DestinationFiles="@(ModLibs->'$(ResonitePath)\rml_libs\SpeechToText\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+</Project>

@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+.vs/
+.idea/
+*.user
+TestResults/
+
+# Release artifacts (built by tools/package.ps1)
+dist/
+
+# Decompiled Resonite code: for local reference only, never commit or redistribute it
+ref/
+
+# Speech models: the mod downloads them on first use; copy them here by hand to run the model-based tests
+models/
+*.bin
+
+# Machine-specific files
+Local.props
+CLAUDE.local.md
+CLAUDE-MCPLINK.md
+*.log

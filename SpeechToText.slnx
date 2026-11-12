@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/core/">
+    <Project Path="core/SpeechToText.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/SpeechToText.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Core.Tests/Core.Tests.csproj" />
+  </Folder>
+</Solution>

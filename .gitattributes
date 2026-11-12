@@ -1,0 +1,6 @@
+# Normalise line endings in text files; never touch binaries.
+* text=auto
+
+*.wav binary
+*.resonitepackage binary
+*.dll binary
